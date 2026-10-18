@@ -64,6 +64,26 @@
    "notes": "品項很多 鬆餅堡跟炒泡麵超好吃",
    "created": 1792332002010,
    "updated": 1792332241580
+  },
+  "萩鹿": {
+   "name": "萩鹿",
+   "photos": [
+    "c8dd69e277c4ffb9ae24.jpg",
+    "6360841c63330ca61543.jpg"
+   ],
+   "visits": [
+    "2026-10-12"
+   ],
+   "price": 3,
+   "rating": 5,
+   "tags": [
+    "台南",
+    "關東煮"
+   ],
+   "status": "visited",
+   "notes": "座位不多",
+   "created": 1792332310216,
+   "updated": 1792332504230
   }
  },
  "tombs": {
