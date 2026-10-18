@@ -42,6 +42,25 @@
    "created": 1792334747905,
    "updated": 1792334829542
   },
+  "full sandwich": {
+   "name": "full sandwich",
+   "photos": [
+    "d04243571b220cf1e75f.jpg"
+   ],
+   "visits": [
+    "2026-09-13"
+   ],
+   "price": 2,
+   "rating": 5,
+   "tags": [
+    "高雄",
+    "三明治"
+   ],
+   "status": "visited",
+   "notes": "",
+   "created": 1792335303679,
+   "updated": 1792335468822
+  },
   "the fifth taste": {
    "name": "the fifth taste",
    "photos": [
