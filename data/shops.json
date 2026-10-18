@@ -68,6 +68,23 @@
    "created": 1792331848851,
    "updated": 1792332255442
   },
+  "哈胖": {
+   "name": "哈胖",
+   "photos": [],
+   "visits": [
+    "2026-10-18"
+   ],
+   "price": 1,
+   "rating": 0,
+   "tags": [
+    "台南",
+    "宵夜"
+   ],
+   "status": "visited",
+   "notes": "",
+   "created": 1792334027701,
+   "updated": 1792334084237
+  },
   "穀奈": {
    "name": "穀奈",
    "photos": [
