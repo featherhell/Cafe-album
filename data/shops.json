@@ -13,12 +13,33 @@
    "rating": 5,
    "tags": [
     "台南",
-    "港式"
+    "港式",
+    "甜點"
    ],
    "status": "visited",
    "notes": "一人限點一顆菠蘿油",
    "created": 1792331848851,
-   "updated": 1792331978207
+   "updated": 1792331997381
+  },
+  "穀奈": {
+   "name": "穀奈",
+   "photos": [
+    "434e92036fdb7fca5b3b.jpg",
+    "6f6659fa210d8c18d2d5.jpg"
+   ],
+   "visits": [
+    "2026-10-18"
+   ],
+   "price": 1,
+   "rating": 5,
+   "tags": [
+    "台南",
+    "宵夜"
+   ],
+   "status": "visited",
+   "notes": "品項很多 鬆餅堡跟炒泡麵超好吃",
+   "created": 1792332002010,
+   "updated": 1792332062789
   }
  },
  "tombs": {
