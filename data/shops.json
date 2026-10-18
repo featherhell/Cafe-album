@@ -1,6 +1,29 @@
 {
  "v": 1,
  "shops": {
+  "the fifth taste": {
+   "name": "the fifth taste",
+   "photos": [
+    "869b6d7989aaca77b56a.jpg"
+   ],
+   "visits": [
+    "2026-10-18"
+   ],
+   "price": 2,
+   "rating": 5,
+   "tags": [
+    "台南",
+    "咖啡廳",
+    "甜點",
+    "千層",
+    "肉桂捲",
+    "乳酪"
+   ],
+   "status": "visited",
+   "notes": "有貓 東西都超好吃",
+   "created": 1792332090623,
+   "updated": 1792332199236
+  },
   "乜料茶居": {
    "name": "乜料茶居",
    "photos": [
