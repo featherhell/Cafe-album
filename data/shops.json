@@ -1,6 +1,28 @@
 {
  "v": 1,
  "shops": {
+  "24米cafe": {
+   "name": "24米cafe",
+   "photos": [
+    "483dfc2b204915516eac.jpg",
+    "d85f868f4c7ab58c3e9f.jpg"
+   ],
+   "visits": [
+    "2026-09-17"
+   ],
+   "price": 2,
+   "rating": 0,
+   "tags": [
+    "台南",
+    "早午餐",
+    "咖啡廳",
+    "鬆餅"
+   ],
+   "status": "visited",
+   "notes": "",
+   "created": 1792335198713,
+   "updated": 1792335296811
+  },
   "Butcher": {
    "name": "Butcher",
    "photos": [
