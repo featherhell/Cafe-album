@@ -128,6 +128,26 @@
    "created": 1792333762298,
    "updated": 1792333915571
   },
+  "万茶川": {
+   "name": "万茶川",
+   "photos": [
+    "fb1a984ddab7e1becb3c.jpg"
+   ],
+   "visits": [
+    "2026-09-07"
+   ],
+   "price": 1,
+   "rating": 5,
+   "tags": [
+    "台南",
+    "抹茶",
+    "飲料"
+   ],
+   "status": "visited",
+   "notes": "",
+   "created": 1792335942531,
+   "updated": 1792336008276
+  },
   "丹瓦樓": {
    "name": "丹瓦樓",
    "photos": [
