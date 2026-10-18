@@ -51,7 +51,7 @@
     "2026-09-08"
    ],
    "price": 2,
-   "rating": 0,
+   "rating": 5,
    "tags": [
     "台南",
     "漢堡"
@@ -59,7 +59,7 @@
    "status": "visited",
    "notes": "只能外帶",
    "created": 1792335776358,
-   "updated": 1792335846005
+   "updated": 1792335852360
   },
   "full sandwich": {
    "name": "full sandwich",
