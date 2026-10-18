@@ -208,6 +208,25 @@
    "created": 1792334219604,
    "updated": 1792334365134
   },
+  "酒桑": {
+   "name": "酒桑",
+   "photos": [
+    "0767194cfb7653b93ff6.jpg"
+   ],
+   "visits": [
+    "2026-10-18"
+   ],
+   "price": 4,
+   "rating": 0,
+   "tags": [
+    "高雄",
+    "居酒屋"
+   ],
+   "status": "visited",
+   "notes": "",
+   "created": 1792334563739,
+   "updated": 1792334627208
+  },
   "食獻": {
    "name": "食獻",
    "photos": [
