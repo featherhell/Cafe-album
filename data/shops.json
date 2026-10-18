@@ -188,6 +188,26 @@
    "created": 1792334846077,
    "updated": 1792334993099
   },
+  "燭日": {
+   "name": "燭日",
+   "photos": [
+    "2a309c5dc15645ba13e0.jpg"
+   ],
+   "visits": [
+    "2026-09-19"
+   ],
+   "price": 2,
+   "rating": 5,
+   "tags": [
+    "台南",
+    "塔可飯",
+    "吃飯"
+   ],
+   "status": "visited",
+   "notes": "",
+   "created": 1792335054731,
+   "updated": 1792335169324
+  },
   "穀奈": {
    "name": "穀奈",
    "photos": [
