@@ -169,6 +169,25 @@
    "created": 1792332310216,
    "updated": 1792332504230
   },
+  "邦拿咖喱": {
+   "name": "邦拿咖喱",
+   "photos": [
+    "3dded0e0cb03d361863e.jpg"
+   ],
+   "visits": [
+    "2026-10-02"
+   ],
+   "price": 2,
+   "rating": 5,
+   "tags": [
+    "台南",
+    "咖喱"
+   ],
+   "status": "visited",
+   "notes": "",
+   "created": 1792334219604,
+   "updated": 1792334365134
+  },
   "食獻": {
    "name": "食獻",
    "photos": [
