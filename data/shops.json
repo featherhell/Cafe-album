@@ -165,6 +165,29 @@
    "created": 1792334154909,
    "updated": 1792334207207
   },
+  "森夜": {
+   "name": "森夜",
+   "photos": [
+    "a8bd024537f929465ae9.jpg",
+    "7c160d260aaebeacaf54.jpg",
+    "7d9abc6c7b532ab3da54.jpg"
+   ],
+   "visits": [
+    "2026-09-21"
+   ],
+   "price": 3,
+   "rating": 0,
+   "tags": [
+    "台北",
+    "甜點",
+    "咖啡廳",
+    "麵包店"
+   ],
+   "status": "visited",
+   "notes": "還有麵包可以買 外帶",
+   "created": 1792334846077,
+   "updated": 1792334987147
+  },
   "穀奈": {
    "name": "穀奈",
    "photos": [
