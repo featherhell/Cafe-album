@@ -167,6 +167,16 @@ textarea.input{min-height:84px;resize:vertical}
 .toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 18px;border-radius:20px;font-weight:700;font-size:14px;z-index:80;max-width:90vw;text-align:center}
 .mono{width:100%;min-height:96px;font-family:ui-monospace,monospace;font-size:12px}
 .hint{color:var(--muted);font-size:12px}
+.icon-btn.err{border-color:var(--accent);color:var(--accent)}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:no-preference){.icon-btn.spin svg{animation:spin 1s linear infinite}}
+.syncbox{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:14px 16px;margin:12px 0 22px;display:grid;gap:12px}
+.syncbox .sh{display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap;align-items:baseline}
+.syncbox .field{margin:0}
+.warn{margin:0;padding:8px 12px;border-radius:12px;background:var(--accent-soft);font-size:13px}
+.syncbox summary{cursor:pointer;font-weight:700;font-size:13px}
+.syncbox ol{margin:8px 0 0;padding-left:20px;font-size:13px;display:grid;gap:4px}
+.syncbox a{color:var(--accent);font-weight:700}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
@@ -177,7 +187,8 @@ textarea.input{min-height:84px;resize:vertical}
   <header class="top">
     <div class="row">
       <div class="brand">店家小相簿<small id="total"></small></div>
-      <button class="icon-btn" id="btnBackup" aria-label="備份與還原" title="備份與還原"></button>
+      <button class="icon-btn" id="btnSync" aria-label="同步" title="同步"></button>
+      <button class="icon-btn" id="btnBackup" aria-label="備份與同步" title="備份與同步"></button>
     </div>
     <div class="row">
       <label class="search"><span id="icSearch"></span><input id="q" type="search" placeholder="搜尋店名,或輸入 #台南 #早午餐" autocomplete="off" aria-label="搜尋"></label>
@@ -223,6 +234,7 @@ const IC={
   star:'<svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3 6.1 20.6l1.3-6.6L2.5 9.4l6.6-.8z"/></svg>',
   photo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="10.5" r="1.8"/><path d="M4 17l5-4 4 3 3-2 4 3"/></svg>'
 };
+IC.sync='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 0 0-14.5-4M4 4v4h4M4 13a8 8 0 0 0 14.5 4M20 20v-4h-4"/></svg>';
 const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
 const fmtDate=s=>s.replace(/-/g,"/");
 const normTag=t=>t.replace(/^[#＃]+/,"").replace(/臺/g,"台").trim();
@@ -269,7 +281,10 @@ const dbDel=k=>tx("shops","readwrite",s=>s.delete(k));
 const dbClear=()=>tx("shops","readwrite",s=>s.clear());
 const metaGet=k=>tx("meta","readonly",s=>s.get(k));
 const metaSet=(k,v)=>tx("meta","readwrite",s=>s.put({k,v}));
-async function save(shop){try{await dbPut(shop);return true}catch(e){toast("儲存失敗,可能是裝置空間不足");return false}}
+let tombs={};   // 刪除標記 {店名: 時間},讓刪除也能同步到其他裝置
+const saveTombs=()=>metaSet("tombs",tombs).catch(()=>{});
+function addTomb(n){tombs[n]=Date.now();saveTombs()}
+async function save(shop){shop.updated=Date.now();try{await dbPut(shop);scheduleSync();return true}catch(e){toast("儲存失敗,可能是裝置空間不足");return false}}
 
 /* ---------- 資料:dictionary,店名為 key ---------- */
 let shops={};   // { 店名: {photos:[], visits:[], price, rating, tags:[], status, notes, created} }
@@ -396,7 +411,7 @@ $("#detail").addEventListener("click",async e=>{
   if(b.dataset.act==="went"){s.status="visited";if(!s.visits.length)s.visits=[today()];if(await save(s)){renderDetail();render();toast("已標記為去過")}return}
   if(b.dataset.act==="again"){if(!s.visits.includes(today()))s.visits.push(today());if(await save(s)){renderDetail();render();toast("已記下今天,共 "+s.visits.length+" 次")}else{}return}
   if(b.dataset.act==="del"){b.dataset.act="del2";b.textContent="再按一次確認刪除";setTimeout(()=>{if(b.isConnected&&b.dataset.act==="del2"){b.dataset.act="del";b.textContent="刪除"}},3000);return}
-  if(b.dataset.act==="del2"){const n=cur;delete shops[n];try{await dbDel(n)}catch(e){}render();closeOv();toast("已刪除")}
+  if(b.dataset.act==="del2"){const n=cur;if(!shops[n].sample)addTomb(n);delete shops[n];try{await dbDel(n)}catch(e){}render();closeOv();toast("已刪除");scheduleSync()}
 });
 
 /* ---------- 新增/編輯 ---------- */
@@ -475,7 +490,7 @@ async function saveEditor(){
   const visits=D.status==="visited"&&!D.visits.length?[today()]:D.visits;
   const shop={name,photos:D.photos,visits:[...new Set(visits)].sort(),price:D.price,rating:D.rating,tags:D.tags,status:D.status,notes:$("#eNote").value.trim(),created:D.created};
   if(!(await save(shop)))return;
-  if(D.orig&&D.orig!==name){delete shops[D.orig];try{await dbDel(D.orig)}catch(e){}}
+  if(D.orig&&D.orig!==name){addTomb(D.orig);delete shops[D.orig];try{await dbDel(D.orig)}catch(e){}}
   shops[name]=shop;cur=name;render();await closeOv();
   if(stack.includes("detail"))renderDetail();else openDetail(name);
   toast(D.orig?"已更新":"已新增");
@@ -483,34 +498,152 @@ async function saveEditor(){
 
 /* ---------- 備份與還原 ---------- */
 function openBackup(){
-  $("#backup").innerHTML='<div class="sheet"><div class="bar"><button class="icon-btn" data-act="close" aria-label="關閉">'+IC.back+'</button><h2>備份與還原</h2></div>'+
-   '<p class="hint">資料只存在這個瀏覽器裡,沒有帳號也不會上傳。換手機、清除瀏覽資料前,建議先備份。</p>'+
+  $("#backup").innerHTML='<div class="sheet"><div class="bar"><button class="icon-btn" data-act="close" aria-label="關閉">'+IC.back+'</button><h2>備份與同步</h2></div>'+
+   '<div class="syncbox"><div class="sh"><b>跨裝置同步(GitHub)</b><span class="hint" id="syncStat"></span></div>'+
+   '<p class="warn">資料會存到這個公開 repo 的 data 分支,任何人都能在 GitHub 上看到你的照片、店名與備註。</p>'+
+   '<div class="field"><label for="sRepo">Repo(帳號/名稱)</label><input class="input" id="sRepo" autocomplete="off" placeholder="featherhell/Cafe-album"></div>'+
+   '<div class="field"><label for="sTok">GitHub 金鑰(只存在這台裝置)</label><input class="input" id="sTok" type="password" autocomplete="off" placeholder="github_pat_…"></div>'+
+   '<div class="row" style="flex-wrap:wrap"><button class="btn" id="sSave" type="button">儲存並同步</button><button class="btn ghost" id="sNow" type="button">立即同步</button><button class="btn danger sm" id="sOff" type="button">停用</button></div>'+
+   '<details><summary>怎麼取得金鑰?</summary><ol><li>打開 <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub 建立金鑰頁面</a>。</li><li>Token name 隨意填,Expiration 選最長。</li><li>Repository access 選 Only select repositories,勾選這個 repo。</li><li>Permissions 展開 Repository permissions,把 Contents 設成 Read and write。</li><li>按 Generate token,複製 github_pat_ 開頭的字串貼到上面。電腦和手機都要各貼一次(可以用同一把)。</li></ol></details></div>'+
+   '<p class="hint">不用同步的話,也可以用下面的複製與貼上手動備份。</p>'+
    '<div class="field"><span class="lab">備份</span><button class="btn" id="bCopy" type="button">複製備份資料</button><textarea class="input mono" id="bOut" readonly placeholder="按上面的按鈕後,備份內容會出現在這裡"></textarea><span class="hint">貼到記事本或雲端筆記保存即可。照片多的話內容會很長。</span></div>'+
    '<div class="field"><span class="lab">還原(會與現有店家合併,同名店家以備份為準)</span><input type="file" id="bFile" accept=".json,application/json,text/plain"><textarea class="input mono" id="bIn" placeholder="或把備份內容貼在這裡"></textarea><button class="btn ghost" id="bImport" type="button">匯入</button></div>'+
    '<div class="err" id="bMsg" role="status"></div>'+
    '<div class="field"><span class="lab">清除</span><div class="row" style="flex-wrap:wrap"><button class="btn danger sm" id="bWipe" type="button">清除全部資料</button></div></div></div>';
+  $("#sRepo").value=lsGet("ca.repo","")||guessRepo();$("#sTok").placeholder=lsGet("ca.token","")?"已儲存(留空表示不變)":"github_pat_…";$("#syncStat").innerHTML=syncStatHTML();
   showOv("backup");
 }
 $("#backup").addEventListener("click",async e=>{
   const b=e.target.closest("button");if(!b)return;const msg=$("#bMsg");
   if(b.dataset.act==="close")return closeOv();
+  if(b.id==="sSave"){const repo=$("#sRepo").value.trim().replace(/^https?:\/\/github\.com\//,"").replace(/\.git$/,"").replace(/\/+$/,""),tok=$("#sTok").value.trim()||lsGet("ca.token","");
+    if(!/^[^\/\s]+\/[^\/\s]+$/.test(repo)){msg.textContent="Repo 請填「帳號/名稱」,例如 featherhell/Cafe-album。";return}
+    if(!tok){msg.textContent="請貼上 GitHub 金鑰。";return}
+    lsSet("ca.repo",repo);lsSet("ca.token",tok);$("#sTok").value="";$("#sTok").placeholder="已儲存(留空表示不變)";msg.textContent="";syncNow(true);return}
+  if(b.id==="sNow"){syncNow(true);return}
+  if(b.id==="sOff"){lsSet("ca.token","");setSync("idle");$("#syncStat").innerHTML=syncStatHTML();msg.textContent="已停用同步,這台裝置上的資料保留。";return}
   if(b.id==="bCopy"){const t=JSON.stringify({app:"cafe-album",v:1,shops});const o=$("#bOut");o.value=t;o.select();
     try{await navigator.clipboard.writeText(t);msg.textContent="已複製 "+Object.keys(shops).length+" 間店家的備份。"}catch(err){msg.textContent="自動複製失敗,請在上方文字框全選後手動複製。"}return}
   if(b.id==="bImport"){const t=$("#bIn").value.trim();if(!t){msg.textContent="請先選擇檔案或貼上備份內容。";return}
     try{const o=JSON.parse(t);const src=o.shops||o;let n=0;
       for(const [k,v] of Object.entries(src)){if(!v||typeof v!=="object")continue;
         const s={name:v.name||k,photos:Array.isArray(v.photos)?v.photos:[],visits:Array.isArray(v.visits)?v.visits:[],price:+v.price||0,rating:+v.rating||0,tags:(v.tags||[]).map(normTag).filter(Boolean),status:v.status==="wish"?"wish":"visited",notes:v.notes||"",created:v.created||Date.now()};
-        shops[s.name]=s;await dbPut(s);n++}
-      render();msg.textContent="已匯入 "+n+" 間店家。"}catch(err){msg.textContent="讀不懂這份資料,請確認是從本 App 複製的備份。"}return}
+        s.updated=Date.now();shops[s.name]=s;await dbPut(s);n++}
+      render();scheduleSync();msg.textContent="已匯入 "+n+" 間店家。"}catch(err){msg.textContent="讀不懂這份資料,請確認是從本 App 複製的備份。"}return}
   if(b.id==="bWipe"){if(b.dataset.sure!=="1"){b.dataset.sure="1";b.textContent="再按一次確認清除";setTimeout(()=>{if(b.isConnected){b.dataset.sure="";b.textContent="清除全部資料"}},3000);return}
-    shops={};try{await dbClear()}catch(err){}render();msg.textContent="已清除全部資料。"}
+    Object.values(shops).forEach(x=>{if(!x.sample)tombs[x.name]=Date.now()});saveTombs();shops={};try{await dbClear()}catch(err){}render();scheduleSync();msg.textContent="已清除全部資料。"+(getCfg()?"同步已開啟,其他裝置上的資料也會一併清除。":"")}
 });
 $("#backup").addEventListener("change",e=>{if(e.target.id==="bFile"&&e.target.files[0]){const r=new FileReader();r.onload=()=>{$("#bIn").value=r.result};r.readAsText(e.target.files[0])}});
+
+/* ---------- GitHub 同步 ---------- */
+// 資料放在 repo 的 data 分支:data/shops.json(店家資料與刪除標記)、data/photos/<雜湊>.jpg(照片)。
+// 以每間店的 updated 時間比較,新的蓋舊的;刪除用 tombs 標記。每次同步最多一個提交。
+const API=lsGet("ca.api","https://api.github.com"),BR="data";
+function guessRepo(){try{const h=location.hostname;if(h.endsWith(".github.io")){const r=location.pathname.split("/")[1];if(r)return h.split(".")[0]+"/"+r}}catch(e){}return ""}
+function getCfg(){const repo=lsGet("ca.repo",""),tok=lsGet("ca.token","");return repo&&tok&&/^[^\/\s]+\/[^\/\s]+$/.test(repo)?{repo,tok}:null}
+let syncing=false,syncAgain=false,syncTimer=null,syncState="idle",syncMsg="";
+function syncStatHTML(){const c=getCfg();if(!c)return "未開啟";const t=+lsGet("ca.last",0);
+  return esc(c.repo)+" · "+(syncState==="busy"?"同步中…":syncState==="err"?'<b style="color:var(--accent)">失敗:'+esc(syncMsg)+'</b>':t?"上次同步 "+new Date(t).toLocaleString("zh-TW",{hour12:false,month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"}):"尚未同步")}
+function setSync(st,msg){syncState=st;syncMsg=msg||"";const b=$("#btnSync");b.classList.toggle("spin",st==="busy");b.classList.toggle("err",st==="err");
+  b.title=st==="err"?"同步失敗:"+msg:st==="busy"?"同步中…":"同步";const el=$("#syncStat");if(el)el.innerHTML=syncStatHTML()}
+class GHErr extends Error{constructor(status,msg){super(msg);this.status=status}}
+async function gh(method,path,body,raw){const c=getCfg();
+  const res=await fetch(API+"/repos/"+c.repo+path,{method,cache:"no-store",headers:Object.assign({"Authorization":"Bearer "+c.tok,"Accept":raw?"application/vnd.github.raw+json":"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28"},body?{"Content-Type":"application/json"}:{}),body:body?JSON.stringify(body):undefined});
+  if(!res.ok){let m="";try{m=(await res.json()).message||""}catch(e){}throw new GHErr(res.status,m)}
+  return res}
+const ghJSON=async(m,p,b)=>(await gh(m,p,b)).json();
+const bufB64=buf=>{let s="";const a=new Uint8Array(buf),n=0x8000;for(let i=0;i<a.length;i+=n)s+=String.fromCharCode.apply(null,a.subarray(i,i+n));return btoa(s)};
+function dataInfo(u){
+  if(u.startsWith("data:image/jpeg;base64,"))return{ext:"jpg",b64:u.slice(23)};
+  if(u.startsWith("data:image/svg+xml")){const t=decodeURIComponent(u.slice(u.indexOf(",")+1));return{ext:"svg",b64:bufB64(new TextEncoder().encode(t))}}
+  return null}
+function fromFile(id,buf){return id.endsWith(".svg")?"data:image/svg+xml;charset=utf-8,"+encodeURIComponent(new TextDecoder().decode(buf)):"data:image/jpeg;base64,"+bufB64(buf)}
+const idCache=new Map();
+async function fileId(u){if(idCache.has(u))return idCache.get(u);const info=dataInfo(u);if(!info){idCache.set(u,null);return null}
+  const d=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(u));
+  const id=[...new Uint8Array(d)].slice(0,10).map(x=>x.toString(16).padStart(2,"0")).join("")+"."+info.ext;idCache.set(u,id);return id}
+const mk=(o,ids)=>({name:o.name,photos:ids,visits:(o.visits||[]).slice().sort(),price:o.price||0,rating:o.rating||0,tags:o.tags||[],status:o.status==="wish"?"wish":"visited",notes:o.notes||"",created:o.created||0,updated:o.updated||0});
+const normObj=(sh,tb)=>({shops:Object.fromEntries(Object.keys(sh).sort().map(k=>[k,mk(sh[k],sh[k].photos||[])])),tombs:Object.fromEntries(Object.keys(tb).sort().map(k=>[k,tb[k]]))});
+
+async function syncOnce(){
+  await ghJSON("GET","");   // repo 不存在或沒權限會在這裡丟錯
+  let head=null,treeSha=null,remote={shops:{},tombs:{}};const have=new Set();
+  try{head=(await ghJSON("GET","/git/ref/heads/"+BR)).object.sha}catch(e){if(!(e instanceof GHErr&&e.status===404))throw e}
+  if(head){
+    treeSha=(await ghJSON("GET","/git/commits/"+head)).tree.sha;
+    const tr=await ghJSON("GET","/git/trees/"+treeSha+"?recursive=1");
+    tr.tree.forEach(t=>{if(t.path.startsWith("data/photos/"))have.add(t.path.slice(12))});
+    if(tr.tree.some(t=>t.path==="data/shops.json")){
+      try{remote=JSON.parse(await (await gh("GET","/contents/data/shops.json?ref="+head,null,true)).text())}catch(e){if(e instanceof GHErr)throw e;throw new GHErr(0,"遠端 shops.json 格式錯誤")}}
+  }
+  const rs=remote.shops||{},rt=remote.tombs||{};
+  const localReal=Object.values(shops).filter(x=>!x.sample);
+  const idData=new Map(),localIds={};
+  for(const x of localReal){localIds[x.name]=[];for(const u of x.photos){const id=await fileId(u);if(id){localIds[x.name].push(id);idData.set(id,u)}}}
+  // 合併
+  const names=new Set([...Object.keys(rs),...localReal.map(x=>x.name),...Object.keys(rt),...Object.keys(tombs)]);
+  const outShops={},outTombs={},toLocal=[],toDelete=[];
+  for(const n of [...names].sort()){
+    const L=shops[n]&&!shops[n].sample?shops[n]:null,R=rs[n]||null,T=Math.max(tombs[n]||0,rt[n]||0);
+    let win=null,from=null;
+    if(L&&R){if((R.updated||0)>(L.updated||0)){win=R;from="R"}else{win=L;from="L"}}else if(L){win=L;from="L"}else if(R){win=R;from="R"}
+    if(win&&(win.updated||0)>T){outShops[n]=from==="L"?mk(win,localIds[n]):mk(win,win.photos||[]);if(from==="R")toLocal.push(n)}
+    else if(L&&(L.updated||0)<=T)toDelete.push(n);
+    if(T)outTombs[n]=T;
+  }
+  // 下載本機沒有的照片
+  for(const n of toLocal)for(const id of outShops[n].photos){
+    if(idData.has(id)||!have.has(id))continue;
+    const buf=await (await gh("GET","/contents/data/photos/"+id+"?ref="+head,null,true)).arrayBuffer();
+    const u=fromFile(id,buf);idData.set(id,u);idCache.set(u,id)}
+  // 寫回本機
+  for(const n of toLocal){const m=outShops[n];
+    const x={name:n,photos:m.photos.map(id=>idData.get(id)).filter(Boolean),visits:m.visits,price:m.price,rating:m.rating,tags:m.tags,status:m.status,notes:m.notes,created:m.created,updated:m.updated};
+    shops[n]=x;await dbPut(x)}
+  for(const n of toDelete){delete shops[n];await dbDel(n)}
+  for(const [k,v] of Object.entries(outTombs))tombs[k]=Math.max(tombs[k]||0,v);
+  saveTombs();
+  if(Object.keys(outShops).length)for(const x of Object.values(shops))if(x.sample){delete shops[x.name];await dbDel(x.name)}   // 已有真實資料,移除示範店家
+  // 上傳
+  const newIds=[...new Set(Object.values(outShops).flatMap(m=>m.photos))].filter(id=>!have.has(id)&&idData.has(id));
+  const changed=JSON.stringify(normObj(outShops,outTombs))!==JSON.stringify(normObj(rs,rt))||newIds.length>0;
+  if(changed){
+    const entries=[],queue=[...newIds];
+    await Promise.all([0,1,2].map(async()=>{while(queue.length){const id=queue.shift(),info=dataInfo(idData.get(id));
+      const b=await ghJSON("POST","/git/blobs",{content:info.b64,encoding:"base64"});entries.push({path:"data/photos/"+id,mode:"100644",type:"blob",sha:b.sha})}}));
+    const js=JSON.stringify(Object.assign({v:1},normObj(outShops,outTombs)),null,1);
+    const jb=await ghJSON("POST","/git/blobs",{content:js,encoding:"utf-8"});
+    entries.push({path:"data/shops.json",mode:"100644",type:"blob",sha:jb.sha});
+    const tr=await ghJSON("POST","/git/trees",head?{base_tree:treeSha,tree:entries}:{tree:entries});
+    const cm=await ghJSON("POST","/git/commits",{message:"sync "+new Date().toISOString(),tree:tr.sha,parents:head?[head]:[]});
+    try{if(head)await ghJSON("PATCH","/git/refs/heads/"+BR,{sha:cm.sha,force:false});else await ghJSON("POST","/git/refs",{ref:"refs/heads/"+BR,sha:cm.sha})}
+    catch(e){if(e instanceof GHErr&&(e.status===422||e.status===409))return "retry";throw e}
+  }
+  lsSet("ca.last",String(Date.now()));
+  return "ok"}
+function errText(e){
+  if(e instanceof GHErr){if(e.status===401)return "金鑰無效或已過期";if(e.status===403||e.status===404)return "找不到 repo,或金鑰沒有讀寫權限(Contents 要設成 Read and write)";return e.message||("錯誤 "+e.status)}
+  return "無法連線,請檢查網路"}
+async function syncNow(manual){
+  if(!getCfg()){if(manual)openBackup();return}
+  if(syncing){syncAgain=true;return}
+  syncing=true;setSync("busy");
+  try{let r;for(let i=0;i<3;i++){r=await syncOnce();if(r!=="retry")break}
+    if(r==="retry")throw new GHErr(0,"同步衝突,請再試一次");
+    setSync("ok");render();
+    if(stack[stack.length-1]==="detail"){if(shops[cur])renderDetail();else closeOv()}
+    if(manual)toast("同步完成")}
+  catch(e){setSync("err",errText(e));if(manual)toast("同步失敗:"+errText(e))}
+  finally{syncing=false;if(syncAgain){syncAgain=false;scheduleSync(500)}}}
+function scheduleSync(ms){if(!getCfg())return;clearTimeout(syncTimer);syncTimer=setTimeout(()=>syncNow(false),ms==null?2500:ms)}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)scheduleSync(300)});
+window.addEventListener("online",()=>scheduleSync(500));
+setInterval(()=>{if(!document.hidden)scheduleSync(0)},60000);
 
 /* ---------- 主畫面事件 ---------- */
 $("#icSearch").innerHTML=IC.search;$("#btnBackup").innerHTML=IC.box;$("#fab").innerHTML=IC.plus;
 $("#fab").onclick=()=>openEditor();
-$("#btnBackup").onclick=openBackup;
+$("#btnBackup").onclick=openBackup;$("#btnSync").innerHTML=IC.sync;$("#btnSync").onclick=()=>syncNow(true);
 $("#q").addEventListener("input",e=>{S.q=e.target.value;render()});
 $("#segStatus").addEventListener("click",e=>{const b=e.target.closest("button");if(b){S.status=b.dataset.s;render()}});
 $("#sortKey").addEventListener("change",e=>{S.key=e.target.value;S.dir=S.key==="name"?"asc":"desc";lsSet("ca.key",S.key);lsSet("ca.dir",S.dir);render()});
@@ -529,11 +662,13 @@ document.addEventListener("click",async e=>{
   db=await openDB();
   try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
   let rows=[];try{rows=(await dbAll())||[]}catch(e){}
+  try{const m=await metaGet("tombs");tombs=(m&&m.v)||{}}catch(e){}
   let seeded=false;try{const m=await metaGet("seeded");seeded=!!(m&&m.v)}catch(e){}
   if(!rows.length&&!seeded){rows=sampleShops();for(const r of rows){try{await dbPut(r)}catch(e){}}try{await metaSet("seeded",1)}catch(e){}}
-  rows.forEach(r=>{r.tags=r.tags||[];r.photos=r.photos||[];r.visits=r.visits||[];r.notes=r.notes||"";shops[r.name]=r});
+  rows.forEach(r=>{if(!r.updated)r.updated=r.created||Date.now();r.tags=r.tags||[];r.photos=r.photos||[];r.visits=r.visits||[];r.notes=r.notes||"";shops[r.name]=r});
   render();
   if(!db)toast("這個瀏覽器無法長期儲存,關閉頁面後資料會消失");
+  scheduleSync(400);
 })();
 })();
 </script>
