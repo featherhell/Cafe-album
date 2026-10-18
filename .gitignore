@@ -1,3 +1,6 @@
 # 金鑰檔不可放進公開 repo
 *token*.json
 *token*.txt
+*.png.tmp
+/order.png
+/grid.png
