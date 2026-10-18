@@ -503,6 +503,7 @@ function openBackup(){
    '<p class="warn">資料會存到這個公開 repo 的 data 分支,任何人都能在 GitHub 上看到你的照片、店名與備註。</p>'+
    '<div class="field"><label for="sRepo">Repo(帳號/名稱)</label><input class="input" id="sRepo" autocomplete="off" placeholder="featherhell/Cafe-album"></div>'+
    '<div class="field"><label for="sTok">GitHub 金鑰(只存在這台裝置)</label><input class="input" id="sTok" type="password" autocomplete="off" placeholder="github_pat_…"></div>'+
+   '<div class="row" style="flex-wrap:wrap"><button class="btn ghost sm" id="sFileBtn" type="button">從檔案載入金鑰</button><input type="file" id="sFile" accept=".json,.txt,application/json,text/plain" hidden><span class="hint">選一次,這台裝置就會記住。</span></div>'+
    '<div class="row" style="flex-wrap:wrap"><button class="btn" id="sSave" type="button">儲存並同步</button><button class="btn ghost" id="sNow" type="button">立即同步</button><button class="btn danger sm" id="sOff" type="button">停用</button></div>'+
    '<details><summary>怎麼取得金鑰?</summary><ol><li>打開 <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub 建立金鑰頁面</a>。</li><li>Token name 隨意填,Expiration 選最長。</li><li>Repository access 選 Only select repositories,勾選這個 repo。</li><li>Permissions 展開 Repository permissions,把 Contents 設成 Read and write。</li><li>按 Generate token,複製 github_pat_ 開頭的字串貼到上面。電腦和手機都要各貼一次(可以用同一把)。</li></ol></details></div>'+
    '<p class="hint">不用同步的話,也可以用下面的複製與貼上手動備份。</p>'+
@@ -519,9 +520,10 @@ $("#backup").addEventListener("click",async e=>{
   if(b.id==="sSave"){const repo=$("#sRepo").value.trim().replace(/^https?:\/\/github\.com\//,"").replace(/\.git$/,"").replace(/\/+$/,""),tok=$("#sTok").value.trim()||lsGet("ca.token","");
     if(!/^[^\/\s]+\/[^\/\s]+$/.test(repo)){msg.textContent="Repo 請填「帳號/名稱」,例如 featherhell/Cafe-album。";return}
     if(!tok){msg.textContent="請貼上 GitHub 金鑰。";return}
-    lsSet("ca.repo",repo);lsSet("ca.token",tok);$("#sTok").value="";$("#sTok").placeholder="已儲存(留空表示不變)";msg.textContent="";syncNow(true);return}
+    if($("#sTok").value.trim())lsSet("ca.tokfile","");lsSet("ca.repo",repo);lsSet("ca.token",tok);$("#sTok").value="";$("#sTok").placeholder="已儲存(留空表示不變)";msg.textContent="";syncNow(true);return}
+  if(b.id==="sFileBtn"){$("#sFile").click();return}
   if(b.id==="sNow"){syncNow(true);return}
-  if(b.id==="sOff"){lsSet("ca.token","");setSync("idle");$("#syncStat").innerHTML=syncStatHTML();msg.textContent="已停用同步,這台裝置上的資料保留。";return}
+  if(b.id==="sOff"){lsSet("ca.token","");lsSet("ca.tokfile","");setSync("idle");$("#syncStat").innerHTML=syncStatHTML();msg.textContent="已停用同步,這台裝置上的資料保留。";return}
   if(b.id==="bCopy"){const t=JSON.stringify({app:"cafe-album",v:1,shops});const o=$("#bOut");o.value=t;o.select();
     try{await navigator.clipboard.writeText(t);msg.textContent="已複製 "+Object.keys(shops).length+" 間店家的備份。"}catch(err){msg.textContent="自動複製失敗,請在上方文字框全選後手動複製。"}return}
   if(b.id==="bImport"){const t=$("#bIn").value.trim();if(!t){msg.textContent="請先選擇檔案或貼上備份內容。";return}
@@ -543,7 +545,8 @@ function guessRepo(){try{const h=location.hostname;if(h.endsWith(".github.io")){
 function getCfg(){const repo=lsGet("ca.repo",""),tok=lsGet("ca.token","");return repo&&tok&&/^[^\/\s]+\/[^\/\s]+$/.test(repo)?{repo,tok}:null}
 let syncing=false,syncAgain=false,syncTimer=null,syncState="idle",syncMsg="";
 function syncStatHTML(){const c=getCfg();if(!c)return "未開啟";const t=+lsGet("ca.last",0);
-  return esc(c.repo)+" · "+(syncState==="busy"?"同步中…":syncState==="err"?'<b style="color:var(--accent)">失敗:'+esc(syncMsg)+'</b>':t?"上次同步 "+new Date(t).toLocaleString("zh-TW",{hour12:false,month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"}):"尚未同步")}
+  const src=lsGet("ca.tokfile","");
+  return esc(c.repo)+(src?" · 金鑰:"+esc(src):"")+" · "+(syncState==="busy"?"同步中…":syncState==="err"?'<b style="color:var(--accent)">失敗:'+esc(syncMsg)+'</b>':t?"上次同步 "+new Date(t).toLocaleString("zh-TW",{hour12:false,month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"}):"尚未同步")}
 function setSync(st,msg){syncState=st;syncMsg=msg||"";const b=$("#btnSync");b.classList.toggle("spin",st==="busy");b.classList.toggle("err",st==="err");
   b.title=st==="err"?"同步失敗:"+msg:st==="busy"?"同步中…":"同步";const el=$("#syncStat");if(el)el.innerHTML=syncStatHTML()}
 class GHErr extends Error{constructor(status,msg){super(msg);this.status=status}}
@@ -639,6 +642,25 @@ function scheduleSync(ms){if(!getCfg())return;clearTimeout(syncTimer);syncTimer=
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)scheduleSync(300)});
 window.addEventListener("online",()=>scheduleSync(500));
 setInterval(()=>{if(!document.hidden)scheduleSync(0)},60000);
+
+/* 金鑰檔:{"repo":"帳號/名稱","token":"github_pat_..."},也接受只含金鑰字串的文字檔。
+   網頁讀不到檔案路徑,所以選過一次後把內容記在這台裝置的瀏覽器,之後不用再選。 */
+function parseTokenFile(t){let repo="",tok="";
+  try{const o=JSON.parse(t);repo=String(o.repo||"").trim();tok=String(o.token||"").trim()}catch(e){}
+  if(!tok){const m=t.match(/(github_pat_[A-Za-z0-9_]+|gh[pousr]_[A-Za-z0-9]+)/);if(m)tok=m[1]}
+  return{repo:repo.replace(/^https?:\/\/github\.com\//,"").replace(/\.git$/,"").replace(/\/+$/,""),tok}}
+$("#backup").addEventListener("change",e=>{
+  if(e.target.id!=="sFile"||!e.target.files[0])return;
+  const f=e.target.files[0],msg=$("#bMsg"),r=new FileReader();e.target.value="";
+  r.onload=()=>{const {repo,tok}=parseTokenFile(String(r.result));
+    if(!tok){msg.textContent="這個檔案裡找不到金鑰,請確認是 cafe-album-token.json。";return}
+    const rp=repo||$("#sRepo").value.trim()||lsGet("ca.repo","")||guessRepo();
+    if(!/^[^\/\s]+\/[^\/\s]+$/.test(rp)){msg.textContent="檔案裡沒有 repo,請先在上方填「帳號/名稱」再載入。";return}
+    lsSet("ca.repo",rp);lsSet("ca.token",tok);lsSet("ca.tokfile",f.name);
+    $("#sRepo").value=rp;$("#sTok").value="";$("#sTok").placeholder="已儲存(留空表示不變)";
+    msg.textContent="已載入「"+f.name+"」,這台裝置會記住,下次不用再選。";$("#syncStat").innerHTML=syncStatHTML();syncNow(true)};
+  r.onerror=()=>{msg.textContent="讀取檔案失敗,請再試一次。"};
+  r.readAsText(f)});
 
 /* ---------- 主畫面事件 ---------- */
 $("#icSearch").innerHTML=IC.search;$("#btnBackup").innerHTML=IC.box;$("#fab").innerHTML=IC.plus;

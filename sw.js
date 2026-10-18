@@ -1,5 +1,5 @@
 // 離線快取:第一次開啟後,沒有網路也能使用。更新 App 時請把 VERSION 加一。
-const VERSION = "v3";
+const VERSION = "v4";
 const CACHE = "cafe-album-" + VERSION;
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icons/icon.svg", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png"];
 
