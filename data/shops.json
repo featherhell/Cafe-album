@@ -1,6 +1,25 @@
 {
  "v": 1,
  "shops": {
+  "Butcher": {
+   "name": "Butcher",
+   "photos": [
+    "9a9a8d88664486007f27.jpg"
+   ],
+   "visits": [
+    "2026-09-21"
+   ],
+   "price": 2,
+   "rating": 5,
+   "tags": [
+    "台北",
+    "漢堡"
+   ],
+   "status": "visited",
+   "notes": "",
+   "created": 1792334747905,
+   "updated": 1792334829542
+  },
   "the fifth taste": {
    "name": "the fifth taste",
    "photos": [
