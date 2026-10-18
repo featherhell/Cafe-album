@@ -81,12 +81,10 @@ svg{display:block}
 .banner button{margin-left:auto}
 
 /* grid */
-.grid{columns:2;column-gap:10px;padding-top:6px}
-@media (min-width:640px){.grid{columns:3;column-gap:14px}}
-@media (min-width:920px){.grid{columns:4}}
-@media (min-width:1180px){.grid{columns:5}}
-.card{display:block;position:relative;width:100%;margin:0 0 10px;padding:0;border:0;border-radius:18px;overflow:hidden;background:var(--surface);break-inside:avoid;text-align:left;box-shadow:var(--shadow);transition:transform .15s}
-@media (min-width:640px){.card{margin-bottom:14px}}
+.grid{display:flex;gap:10px;align-items:flex-start;padding-top:6px}
+.col{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
+@media (min-width:640px){.grid,.col{gap:14px}}
+.card{display:block;position:relative;width:100%;margin:0;padding:0;border:0;border-radius:18px;overflow:hidden;background:var(--surface);text-align:left;box-shadow:var(--shadow);transition:transform .15s}
 .card:hover{transform:translateY(-2px)}
 .card img{display:block;width:100%;height:auto}
 .ph{aspect-ratio:var(--r,1/1.2);display:grid;place-items:center;padding:14px;text-align:center;font-weight:900;font-size:17px;background:color-mix(in srgb,hsl(var(--h) 80% 62%) 32%,var(--surface))}
@@ -326,10 +324,20 @@ function cardHTML(s){
     :'<div class="ph" style="--h:'+hue(s.name)+';--r:1/'+(1.05+(hue(s.name)%5)/10)+'">'+esc(s.name)+'</div>';
   return '<button class="card" data-name="'+esc(s.name)+'" aria-label="'+esc(s.name)+'">'+body+badge+'</button>';
 }
+// 瀑布流:依欄數輪流分配(第 1 張第 1 欄、第 2 張第 2 欄…),閱讀順序是由左至右、再由上至下。欄數對應螢幕寬度。
+const colCount=()=>{const w=innerWidth;return w>=1180?5:w>=920?4:w>=640?3:2};
+let lastList=[],lastCols=0;
+function renderGrid(list){
+  lastList=list;const n=colCount();lastCols=n;
+  const cols=Array.from({length:n},()=>[]);
+  list.forEach((s,i)=>cols[i%n].push(cardHTML(s)));
+  $("#grid").innerHTML=cols.map(c=>'<div class="col">'+c.join("")+'</div>').join("");
+}
+let rsT;addEventListener("resize",()=>{clearTimeout(rsT);rsT=setTimeout(()=>{if(colCount()!==lastCols)renderGrid(lastList)},150)});
 function render(){
   const all=Object.keys(shops).length,list=filtered();
   $("#total").textContent=all?all+" 間":"";
-  $("#grid").innerHTML=list.map(cardHTML).join("");
+  renderGrid(list);
   // 標籤列
   const tc=tagCounts();
   $("#tagbar").innerHTML=(S.tags.size?'<button class="chip clear" data-clear="1">清除</button>':"")+
