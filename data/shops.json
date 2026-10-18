@@ -84,6 +84,25 @@
    "notes": "座位不多",
    "created": 1792332310216,
    "updated": 1792332504230
+  },
+  "食獻": {
+   "name": "食獻",
+   "photos": [
+    "876d5313daa050ac201b.jpg"
+   ],
+   "visits": [
+    "2026-10-10"
+   ],
+   "price": 3,
+   "rating": 5,
+   "tags": [
+    "高雄",
+    "丼飯"
+   ],
+   "status": "visited",
+   "notes": "",
+   "created": 1792332516449,
+   "updated": 1792332638294
   }
  },
  "tombs": {
