@@ -1,6 +1,26 @@
 {
  "v": 1,
  "shops": {
+  "大學路麥當勞": {
+   "name": "大學路麥當勞",
+   "photos": [
+    "cc10e46a3a6dbd21d6b4.jpg",
+    "913918281f5973e66f28.jpg"
+   ],
+   "visits": [
+    "2026-10-18"
+   ],
+   "price": 1,
+   "rating": 3,
+   "tags": [
+    "台南",
+    "咖啡廳"
+   ],
+   "status": "visited",
+   "notes": "",
+   "created": 1792316876242,
+   "updated": 1792316936305
+  },
   "萬多利": {
    "name": "萬多利",
    "photos": [
