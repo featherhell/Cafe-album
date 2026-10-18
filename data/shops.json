@@ -1,6 +1,25 @@
 {
  "v": 1,
  "shops": {
+  "萬多利": {
+   "name": "萬多利",
+   "photos": [
+    "0d69690c93f1ede01b5a.jpg"
+   ],
+   "visits": [
+    "2026-10-18"
+   ],
+   "price": 2,
+   "rating": 5,
+   "tags": [
+    "屏東",
+    "生魚片"
+   ],
+   "status": "visited",
+   "notes": "",
+   "created": 1792316812289,
+   "updated": 1792316864510
+  },
   "路邊烤肉": {
    "name": "路邊烤肉",
    "photos": [
