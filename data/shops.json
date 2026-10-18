@@ -87,6 +87,26 @@
    "created": 1792334027701,
    "updated": 1792334149477
   },
+  "宜華蛋餅": {
+   "name": "宜華蛋餅",
+   "photos": [
+    "6f31f63eddfb782a4287.jpg"
+   ],
+   "visits": [
+    "2026-10-03"
+   ],
+   "price": 1,
+   "rating": 0,
+   "tags": [
+    "台南",
+    "宵夜",
+    "早餐"
+   ],
+   "status": "visited",
+   "notes": "",
+   "created": 1792334154909,
+   "updated": 1792334207207
+  },
   "穀奈": {
    "name": "穀奈",
    "photos": [
