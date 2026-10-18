@@ -43,6 +43,27 @@
    "notes": "",
    "created": 1792316417118,
    "updated": 1792316436671
+  },
+  "狸貓馬鈴薯": {
+   "name": "狸貓馬鈴薯",
+   "photos": [
+    "da3356b0b7fd898ca84c.jpg"
+   ],
+   "visits": [
+    "2026-10-18"
+   ],
+   "price": 3,
+   "rating": 4,
+   "tags": [
+    "台北",
+    "甜點",
+    "狸貓",
+    "屁眼"
+   ],
+   "status": "visited",
+   "notes": "",
+   "created": 1792316466229,
+   "updated": 1792316499588
   }
  },
  "tombs": {}
