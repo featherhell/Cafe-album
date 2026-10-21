@@ -42,6 +42,27 @@
    "created": 1792334747905,
    "updated": 1792334829542
   },
+  "JMT": {
+   "name": "JMT",
+   "photos": [
+    "7acfa94cd3bb4c29a4fb.jpg"
+   ],
+   "visits": [
+    "2026-08-19"
+   ],
+   "price": 2,
+   "rating": 0,
+   "tags": [
+    "台南",
+    "韓式",
+    "吃飯",
+    "宵夜"
+   ],
+   "status": "visited",
+   "notes": "",
+   "created": 1792614120172,
+   "updated": 1792614669249
+  },
   "eat up burger": {
    "name": "eat up burger",
    "photos": [
