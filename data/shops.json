@@ -63,6 +63,26 @@
    "created": 1792614120172,
    "updated": 1792614669249
   },
+  "bitch fry fry": {
+   "name": "bitch fry fry",
+   "photos": [
+    "fbf95a1ad5db1f4b99e7.jpg",
+    "b8f04c5f4f18b6b4d327.jpg"
+   ],
+   "visits": [
+    "2026-08-17"
+   ],
+   "price": 1,
+   "rating": 0,
+   "tags": [
+    "台南",
+    "吃飯"
+   ],
+   "status": "visited",
+   "notes": "",
+   "created": 1792616202604,
+   "updated": 1792616344013
+  },
   "eat up burger": {
    "name": "eat up burger",
    "photos": [
