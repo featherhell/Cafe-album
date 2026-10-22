@@ -23,8 +23,8 @@
    "created": 1792335198713,
    "updated": 1792335296811
   },
-  "7fine days": {
-   "name": "7fine days",
+  "7FINEDAYS": {
+   "name": "7FINEDAYS",
    "photos": [
     "a6082a0b149cbd8ba44c.jpg",
     "69444aa9281edd9aed81.jpg"
@@ -42,7 +42,7 @@
    "status": "visited",
    "notes": "還沒復業",
    "created": 1792688483952,
-   "updated": 1792689230967
+   "updated": 1792697398977
   },
   "Butcher": {
    "name": "Butcher",
@@ -809,6 +809,7 @@
   }
  },
  "tombs": {
+  "7fine days": 1792697398984,
   "哈胖": 1792334149548,
   "大學路麥當勞": 1792319125617,
   "狸貓女裝": 1792316716729,
