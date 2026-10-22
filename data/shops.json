@@ -477,6 +477,27 @@
    "created": 1792615709713,
    "updated": 1792615996418
   },
+  "歐塔克": {
+   "name": "歐塔克",
+   "photos": [
+    "d8bff82fabf14c5cdb16.jpg",
+    "2082e030b0c6bfc8ca0f.jpg"
+   ],
+   "visits": [
+    "2026-08-14"
+   ],
+   "price": 1,
+   "rating": 0,
+   "tags": [
+    "台南",
+    "咖啡廳",
+    "貓咪"
+   ],
+   "status": "visited",
+   "notes": "",
+   "created": 1792689776505,
+   "updated": 1792690066280
+  },
   "澤次郎": {
    "name": "澤次郎",
    "photos": [
