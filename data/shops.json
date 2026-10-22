@@ -23,6 +23,27 @@
    "created": 1792335198713,
    "updated": 1792335296811
   },
+  "7fine days": {
+   "name": "7fine days",
+   "photos": [
+    "a6082a0b149cbd8ba44c.jpg",
+    "69444aa9281edd9aed81.jpg"
+   ],
+   "visits": [
+    "2026-08-16"
+   ],
+   "price": 2,
+   "rating": 0,
+   "tags": [
+    "台中",
+    "吃飯",
+    "甜點"
+   ],
+   "status": "visited",
+   "notes": "還沒復業",
+   "created": 1792688483952,
+   "updated": 1792689230967
+  },
   "Butcher": {
    "name": "Butcher",
    "photos": [
