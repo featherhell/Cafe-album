@@ -787,6 +787,25 @@
    "created": 1792334563739,
    "updated": 1792689507434
   },
+  "青山茶行": {
+   "name": "青山茶行",
+   "photos": [
+    "fc5e0159196280a3af72.jpg"
+   ],
+   "visits": [
+    "2026-08-14"
+   ],
+   "price": 1,
+   "rating": 0,
+   "tags": [
+    "台南",
+    "飲料"
+   ],
+   "status": "visited",
+   "notes": "",
+   "created": 1792699336785,
+   "updated": 1792699423490
+  },
   "食獻": {
    "name": "食獻",
    "photos": [
